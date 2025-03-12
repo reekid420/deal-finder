@@ -28,6 +28,11 @@ SITES = {
         "enabled": True,
         "base_url": "https://www.facebook.com/marketplace/search/?query=",
         "requires_selenium": True
+    },
+    "newegg": {
+        "enabled": True,
+        "base_url": "https://www.newegg.com/p/pl?d=",
+        "requires_selenium": False
     }
 }
 
@@ -105,7 +110,7 @@ ANTI_DETECTION = {
 LOGGING = {
     "log_level": "INFO",
     "log_file": "crawler.log",
-    "log_format": "%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+    "log_format": "{time:YYYY-MM-DD HH:mm:ss} | {level: <8} | {name}:{function}:{line} - {message}",
     "max_log_size": 10485760,  # 10MB
     "backup_count": 5
 } 

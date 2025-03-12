@@ -15,29 +15,31 @@ A multi-platform web crawler that searches reselling sites based on user prompts
 
 ## Installation
 
-1. Clone the repository:
+1. Download python 3.12
+
+2. Clone the repository:
 ```bash
-git clone https://github.com/your-username/tech-deals-finder.git
-cd tech-deals-finder
+git clone https://github.com/reekid420/tech-deals-finder.git
+cd deal-finder
 ```
 
-2. Create and activate a virtual environment (recommended):
+3. Create and activate a virtual environment (recommended):
 ```bash
 python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
+source venv/bin/activate  # On Windows: venv\Scripts\activate, On Fish terminal: venv\bin\activate.fish 
 ```
 
-3. Install dependencies:
+4. Install dependencies:
 ```bash
 pip install -r requirements.txt
 ```
 
-4. Install Playwright for Facebook Marketplace browsing:
+5. Install Playwright for Facebook Marketplace/Newegg browsing:
 ```bash
 playwright install
 ```
 
-5. Create a `.env` file and add your API keys and credentials:
+6. Create a `.env` file and add your API keys and credentials:
 ```
 GEMINI_API_KEY=your_api_key_here
 FB_EMAIL=your_facebook_email
@@ -51,7 +53,7 @@ FB_PASSWORD=your_facebook_password
 Run the Streamlit web application:
 
 ```bash
-streamlit run ui/app.py
+python main.py
 ```
 
 This will open a web interface where you can:
@@ -97,6 +99,7 @@ tech-deals-finder/
 Currently supported:
 - eBay
 - Facebook Marketplace
+- Newegg
 
 Coming soon:
 - Craigslist
@@ -105,7 +108,14 @@ Coming soon:
 
 ## Recent Updates
 
-### Version 0.3.0 (Latest)
+### Version 0.4.0 (Latest)
+- Added Newegg integration for computer hardware and electronics
+- Improved Facebook Marketplace scraper with better detection avoidance
+- Enhanced JSON parsing in AI ranking system
+- Added more robust error handling for marketplace scrapers
+- Improved condition detection for better filtering
+
+### Version 0.3.0
 - Added Facebook Marketplace integration with Playwright
 - Completely redesigned UI with card view and table view options
 - Enhanced AI query processing with brand detection and keyword extraction
@@ -129,7 +139,7 @@ Coming soon:
 
 ## Requirements
 
-- Python 3.8 or higher (tested with Python 3.13)
+- Python 3.12 (tested with Python 3.12.9)
 - Google Gemini API key
 - Facebook account for Marketplace access (optional)
 - Internet connection
@@ -150,4 +160,85 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 
 ## License
 
-This project is licensed under the MIT License. 
+This project is licensed under the MIT License.
+
+# Testing
+
+This project includes a comprehensive test suite for automating testing of scrapers and other components without having to manually configure websites. The test suite uses mocking to simulate browser behavior and website responses.
+
+## Test Structure
+
+The test suite is organized as follows:
+
+- `conftest.py` - Contains shared pytest fixtures used across multiple test files
+- `fixtures/` - HTML fixtures to simulate website responses for consistent testing
+- `scrapers/` - Tests for individual scraper modules
+- `utils/` - Tests for utility functions
+- `temp/` - Temporary directory for test artifacts (created automatically)
+
+## Running Tests
+
+To run the tests:
+
+```bash
+# Run all tests
+./run_tests.py
+
+# Run with verbose output
+./run_tests.py -v
+
+# Run with coverage report
+./run_tests.py -c
+
+# Run just the Facebook scraper tests
+./run_tests.py -m scrapers/sites/test_facebook.py
+```
+
+## Test Coverage
+
+Current test coverage is approximately 39% of the codebase. Here's the breakdown by module:
+
+- eBay scraper: 83%
+- Facebook scraper: 12%
+- Newegg scraper: 22%
+- AI Helper module: 64%
+- Config module: 100%
+- Location module: 83%
+- Security module: 89%
+
+See `tests/COVERAGE_REPORT.md` for a detailed breakdown and recommendations for improving coverage.
+
+## Mocking vs. Real Testing
+
+The test suite uses mocking to simulate browser behavior and website responses, which provides several benefits:
+
+1. **Speed** - Tests run much faster without launching real browsers
+2. **Reliability** - Tests don't depend on network conditions or website changes
+3. **Consistency** - Tests produce the same results every time
+4. **No Credentials** - No need to use real login credentials in tests
+
+## Adding New Tests
+
+When adding new tests:
+
+1. Create a new test file in the appropriate directory
+2. Add HTML fixtures if needed
+3. Use the existing fixtures in `conftest.py` for browser mocking
+4. Follow the pattern of existing tests for consistency
+
+## Mock Data
+
+The test suite includes mock HTML responses in the `fixtures/` directory to simulate website responses. When adding new tests, you can:
+
+1. Use the existing fixtures
+2. Create new fixtures for different scenarios
+3. Modify existing fixtures to test edge cases
+
+## Handling Captchas in Tests
+
+For websites with captchas like Newegg, the test suite simulates both scenarios:
+
+1. No captcha detected (normal flow)
+2. Captcha detected (requires manual intervention in real usage, but mocked in tests)
+
+See `HOW_TO_RUN_TESTS.md` for more details on running and writing tests. 

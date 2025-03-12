@@ -1,34 +1,35 @@
-# Web scraping
-beautifulsoup4==4.12.2
+# Scraping and browser automation
 requests==2.31.0
+beautifulsoup4==4.12.2
+playwright==1.40.0
+lxml==4.9.3
 
-# Data processing
-pandas>=2.2.0  # Use latest version that's compatible with Python 3.13
-numpy>=1.26.1
-
-# Location services
-geopy==2.4.1
-
-# UI
+# Web framework
 streamlit==1.28.0
-streamlit-tags==1.2.8
-streamlit-card==0.0.61
-streamlit-extras==0.3.0
+streamlit-extras==0.3.2
 
 # AI integration
 google-generativeai==0.3.1
+langchain==0.0.339
+langchain-core==0.1.5
 
-# HTTP and utilities
-httpx==0.25.1
+# Utilities
 python-dotenv==1.0.0
-setuptools>=65.5.0  # For distutils module in Python 3.13
-
-# For JavaScript-heavy site support (Facebook, Amazon)
-# selenium==4.15.2
-playwright==1.40.0
-
-# Logging
 loguru==0.7.2
+tenacity==8.2.3
+tqdm==4.66.1
+
+# Image processing
+Pillow==10.1.0
+
+# Data manipulation
+pandas==2.1.2
+numpy==1.26.1
+
+# Testing
+pytest==7.4.3
+pytest-cov==4.1.0
+responses==0.24.1
 
 # Security
-cryptography==42.0.2
+cryptography==41.0.5

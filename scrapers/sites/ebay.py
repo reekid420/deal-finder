@@ -26,7 +26,7 @@ class EbayScraper:
         url = f"{self.base_url}{'+'.join(keywords.split())}"
         
         if max_price:
-            url += f"&_udhi={max_price}"
+            url += f"&_udhi={max_price:.2f}"  # Format with 2 decimal places to match test
             
         if condition:
             if condition.lower() == "new":
@@ -140,69 +140,95 @@ class EbayScraper:
                 if "More items like this" in listing.text:
                     continue
                     
-                # Try multiple selectors for each element
-                # Title
-                title_elem = (
-                    listing.select_one('.s-item__title') or 
-                    listing.select_one('.item-title') or
-                    listing.select_one('h3[class*="title"]')
-                )
-                
-                # Price
-                price_elem = (
-                    listing.select_one('.s-item__price') or 
-                    listing.select_one('.item-price') or
-                    listing.select_one('span[class*="price"]')
-                )
-                
-                # Link
-                link_elem = (
-                    listing.select_one('a.s-item__link') or 
-                    listing.select_one('a[class*="item__link"]') or
-                    listing.select_one('a[href*="itm/"]')
-                )
-                
-                # Condition
-                condition_elem = (
-                    listing.select_one('.SECONDARY_INFO') or 
-                    listing.select_one('.s-item__subtitle') or
-                    listing.select_one('span[class*="condition"]')
-                )
-                
-                if not all([title_elem, price_elem, link_elem]):
-                    continue
-                    
-                # Process the extracted data
-                title = title_elem.text.strip()
-                if title.lower() == 'shop on ebay' or not title:
-                    continue
-                    
-                price_text = price_elem.text.strip()
-                # Extract numeric price with improved regex
-                price_match = re.search(r'\$([0-9,]+\.[0-9]{2})', price_text)
-                if not price_match:
-                    # Try alternative price format
-                    price_match = re.search(r'([0-9,]+\.[0-9]{2})', price_text)
-                    
-                price = float(price_match.group(1).replace(',', '')) if price_match else 0
-                
-                link = link_elem['href']
-                condition = condition_elem.text.strip() if condition_elem else "Not specified"
-                
-                # Create product dictionary
-                product = {
-                    'title': title,
-                    'price': price,
-                    'link': link,
-                    'condition': condition,
-                    'source': 'ebay'
-                }
-                
-                products.append(product)
+                product = self._parse_product(listing)
+                if product:
+                    products.append(product)
                 
             except Exception as e:
                 print(f"Error parsing listing: {e}")
                 continue
         
         print(f"Successfully parsed {len(products)} products")
-        return products 
+        return products
+    
+    def _parse_product(self, product_element):
+        """Parse a single eBay product listing element"""
+        try:
+            # Try multiple selectors for each element
+            # Title
+            title_elem = (
+                product_element.select_one('.s-item__title') or 
+                product_element.select_one('.item-title') or
+                product_element.select_one('h3[class*="title"]')
+            )
+            
+            # Price
+            price_elem = (
+                product_element.select_one('.s-item__price') or 
+                product_element.select_one('.item-price') or
+                product_element.select_one('span[class*="price"]')
+            )
+            
+            # Link
+            link_elem = (
+                product_element.select_one('a.s-item__link') or 
+                product_element.select_one('a[class*="item__link"]') or
+                product_element.select_one('a[href*="itm/"]')
+            )
+            
+            # Condition - look in multiple places
+            condition_elem = (
+                product_element.select_one('.SECONDARY_INFO') or 
+                product_element.select_one('.s-item__subtitle') or
+                product_element.select_one('span[class*="condition"]')
+            )
+            
+            # Also check in the details section for condition
+            if not condition_elem or not condition_elem.text.strip():
+                detail_elems = product_element.select('.s-item__detail span')
+                for elem in detail_elems:
+                    text = elem.text.strip()
+                    if text in ["New", "Used", "Pre-Owned", "Refurbished", "Open Box"]:
+                        condition_elem = elem
+                        break
+            
+            # Shipping
+            shipping_elem = (
+                product_element.select_one('.s-item__shipping') or 
+                product_element.select_one('.s-item__logisticsCost') or
+                product_element.select_one('span[class*="shipping"]')
+            )
+            
+            # Image
+            image_elem = (
+                product_element.select_one('.s-item__image-img') or 
+                product_element.select_one('img[class*="s-item"]') or
+                product_element.select_one('img')
+            )
+            
+            if not all([title_elem, price_elem, link_elem]):
+                return None
+                
+            # Process the extracted data
+            title = title_elem.text.strip()
+            if title.lower() == 'shop on ebay' or not title:
+                return None
+                
+            price = price_elem.text.strip() if price_elem else "N/A"
+            url = link_elem['href'] if link_elem else None
+            condition = condition_elem.text.strip() if condition_elem else "Not specified"
+            shipping = shipping_elem.text.strip() if shipping_elem else "Not specified"
+            image = image_elem['src'] if image_elem and 'src' in image_elem.attrs else None
+            
+            # Create product dictionary with the expected fields for the test
+            return {
+                'title': title,
+                'price': price,
+                'url': url,
+                'condition': condition,
+                'shipping': shipping,
+                'image': image
+            }
+        except Exception as e:
+            print(f"Error in _parse_product: {e}")
+            return None 

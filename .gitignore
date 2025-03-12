@@ -1,3 +1,4 @@
+# Project specific configuration files
 Focus.md
 WebCrawlerProjectGuide.md
 .env
@@ -6,5 +7,99 @@ WebCrawlerProjectGuide.md
 CursorFocus/*
 CursorFocus
 .cursorignore
+.vscode/*
+.vscode
+.encryption_key
+
+# Python virtual environments
 venv312/*
 venv312
+venv/*
+venv
+env/*
+env
+*.venv
+.Python
+
+# Python bytecode and cache
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# Distribution / packaging
+dist/
+build/
+*.egg-info/
+*.egg
+
+# Logs and databases
+logs/*
+*.log
+*.log.*
+*.sqlite3
+*.db
+
+# Generated screenshots and temporary files
+*.png
+*.jpg
+*.jpeg
+*.html
+*.tmp
+*_debug.png
+*_error.png
+*captcha*.png
+fb_*.png
+newegg_*.png
+temp/
+tmp/
+tests/temp/
+
+# Unit test / coverage reports
+htmlcov/
+.tox/
+.nox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+.hypothesis/
+.pytest_cache/
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# VS Code
+.history
+*.code-workspace
+
+# Environment variables
+.env.*
+
+# macOS system files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+
+# Windows system files
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# IntelliJ/PyCharm
+.idea/
+*.iml
+*.iws
+.idea_modules/
+out/
+
+# Playwright browser data
+**/browser_data/
+**/.browser_data/
+playwright-log.txt
