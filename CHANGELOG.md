@@ -2,13 +2,22 @@
 
 All notable changes to the Deal Finder project will be documented in this file.
 
-## [0.5.0] - 2025-03-12
+## [0.5.1] - 2025-03-12
 - Improved test coverage from 43% to 44%
 - Enhanced Facebook scraper tests with 8 new test cases
 - Fixed headless mode operation in all scrapers
 - Added comprehensive test suite documentation
 - Improved .gitignore configuration to exclude sensitive keys and temporary files
 - Fixed all failing tests across modules (61/61 tests now pass)
+
+## [0.5.0] - 2025-03-10
+- Achieved reliable Facebook Marketplace scraping with robust error handling
+- Stabilized Newegg integration with captcha detection and handling
+- Added headless mode support for all scrapers
+- Improved browser context management for better performance
+- Enhanced product parsing logic across all supported sites
+- Optimized search URL construction with better parameter handling
+- Added support for automated testing of all scraper components
 
 ## [0.4.0]
 - Added Newegg integration for computer hardware and electronics
