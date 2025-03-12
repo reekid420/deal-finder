@@ -55,6 +55,10 @@ Run the application:
 ```bash
 python main.py
 ```
+or
+```bash
+./run.sh
+```
 
 This will open a web interface where you can:
 1. Enter your search query in natural language
@@ -137,16 +141,16 @@ To run the tests:
 
 ### Test Coverage
 
-Current test coverage is approximately 44% of the codebase. Here's the breakdown by module:
+Current test coverage is approximately 49% of the codebase. Here's the breakdown by module:
 
 - eBay scraper: 83%
-- Facebook scraper: 15%
-- Newegg scraper: 37%
+- Facebook scraper: 18%
+- Newegg scraper: 42%
 - AI Helper module: 68%
 - Config module: 100%
 - Location module: 87%
 - Security module: 89%
-- Logging module: 19%
+- Logging module: 91%
 
 See `tests/COVERAGE_REPORT.md` for a detailed breakdown and recommendations for improving coverage.
 
@@ -184,4 +188,16 @@ See [CHANGELOG.md](CHANGELOG.md) for a detailed history of changes to this proje
 
 ## License
 
-This project is licensed under the MIT License. 
+This project is licensed under the GNU General Public License v3.0 (GPL-3.0) - see the [LICENSE](LICENSE) file for details.
+
+### What this means:
+
+- You are free to use, modify, and distribute this software.
+- If you distribute modified versions, you must:
+  - Disclose the source code
+  - License your modifications under the GPL-3.0
+  - Maintain copyright notices
+  - Document changes you've made
+- This program comes with ABSOLUTELY NO WARRANTY.
+
+For more details on the GPL-3.0 license, visit [https://www.gnu.org/licenses/gpl-3.0.en.html](https://www.gnu.org/licenses/gpl-3.0.en.html) 
