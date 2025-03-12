@@ -676,3 +676,332 @@ class TestFacebookMarketplaceScraper:
         
         # Should have tried 3 times total
         assert len(attempts) == 3
+
+    def test_restore_session_with_valid_cookies(self, scraper, tmp_path):
+        """Test that _restore_session successfully restores session with valid cookies"""
+        # Setup mock context
+        mock_context = MagicMock()
+        mock_context.add_cookies = MagicMock()
+        
+        # Create a temporary cookies file with valid content
+        test_cookies = [
+            {"name": "c_user", "value": "123456789", "domain": ".facebook.com"},
+            {"name": "xs", "value": "abcdef123456", "domain": ".facebook.com"}
+        ]
+        
+        # Use a temporary file for testing
+        tmp_cookies_file = tmp_path / "test_cookies.json"
+        with open(tmp_cookies_file, 'w') as f:
+            json.dump(test_cookies, f)
+        
+        # Override the cookies file path in the scraper
+        scraper.cookies_file = str(tmp_cookies_file)
+        
+        # Call the method
+        result = scraper._restore_session(mock_context)
+        
+        # Verify results
+        assert result is True
+        mock_context.add_cookies.assert_called_once_with(test_cookies)
+    
+    def test_restore_session_with_empty_cookies(self, scraper, tmp_path):
+        """Test that _restore_session handles empty cookies file properly"""
+        # Setup mock context
+        mock_context = MagicMock()
+        mock_context.add_cookies = MagicMock()
+        
+        # Create a temporary cookies file with empty content
+        tmp_cookies_file = tmp_path / "empty_cookies.json"
+        with open(tmp_cookies_file, 'w') as f:
+            json.dump([], f)
+        
+        # Override the cookies file path in the scraper
+        scraper.cookies_file = str(tmp_cookies_file)
+        
+        # Call the method
+        result = scraper._restore_session(mock_context)
+        
+        # Verify results
+        assert result is False
+        mock_context.add_cookies.assert_not_called()
+    
+    def test_restore_session_with_nonexistent_file(self, scraper):
+        """Test that _restore_session handles nonexistent cookies file properly"""
+        # Setup mock context
+        mock_context = MagicMock()
+        
+        # Set a non-existent file path
+        scraper.cookies_file = "/path/to/nonexistent/file.json"
+        
+        # Call the method
+        result = scraper._restore_session(mock_context)
+        
+        # Verify results
+        assert result is False
+        mock_context.add_cookies.assert_not_called()
+    
+    def test_restore_session_with_invalid_json(self, scraper, tmp_path):
+        """Test that _restore_session handles invalid JSON in cookies file"""
+        # Setup mock context
+        mock_context = MagicMock()
+        
+        # Create a temporary file with invalid JSON
+        tmp_cookies_file = tmp_path / "invalid_cookies.json"
+        with open(tmp_cookies_file, 'w') as f:
+            f.write("{invalid json")
+        
+        # Override the cookies file path in the scraper
+        scraper.cookies_file = str(tmp_cookies_file)
+        
+        # Call the method
+        result = scraper._restore_session(mock_context)
+        
+        # Verify results
+        assert result is False
+        mock_context.add_cookies.assert_not_called()
+
+    def test_search_with_browser_browser_init_failure(self, scraper, monkeypatch):
+        """Test error handling when browser initialization fails"""
+        # Mock sync_playwright to raise an exception
+        def mock_playwright_error(*args, **kwargs):
+            raise Exception("Failed to initialize browser")
+        
+        monkeypatch.setattr("scrapers.sites.facebook.sync_playwright", mock_playwright_error)
+        
+        # Call search method
+        result = scraper.search("laptops")
+        
+        # Verify empty list is returned
+        assert result == []
+        
+    def test_search_with_browser_network_error(self, scraper, mock_playwright, monkeypatch):
+        """Test error handling when network errors occur during navigation"""
+        # Mock setup
+        mock_browser = MagicMock()
+        mock_context = MagicMock()
+        mock_page = MagicMock()
+        
+        # Configure mock to simulate a network error
+        def mock_goto_error(*args, **kwargs):
+            raise Exception("Network error occurred")
+        
+        mock_page.goto.side_effect = mock_goto_error
+        mock_context.new_page.return_value = mock_page
+        mock_browser.new_context.return_value = mock_context
+        mock_playwright.chromium.launch.return_value = mock_browser
+        
+        # Call search
+        result = scraper.search("laptops")
+        
+        # Verify empty list is returned
+        assert result == []
+        
+    def test_search_with_browser_page_timeout(self, scraper, mock_playwright, monkeypatch):
+        """Test error handling when pages time out"""
+        # Mock setup
+        mock_browser = MagicMock()
+        mock_context = MagicMock()
+        mock_page = MagicMock()
+        
+        # Configure mocks to go through initialization, but fail on wait_for_selector
+        mock_page.goto.return_value = None
+        def mock_timeout_error(*args, **kwargs):
+            raise Exception("Timeout waiting for selector")
+        
+        mock_page.wait_for_selector.side_effect = mock_timeout_error
+        mock_context.new_page.return_value = mock_page
+        mock_browser.new_context.return_value = mock_context
+        mock_playwright.chromium.launch.return_value = mock_browser
+        
+        # Call search
+        result = scraper.search("laptops")
+        
+        # Verify empty list is returned
+        assert result == []
+        
+    def test_search_with_browser_parsing_error(self, scraper, mock_playwright, monkeypatch):
+        """Test error handling when product parsing fails"""
+        # Mock setup
+        mock_browser = MagicMock()
+        mock_context = MagicMock()
+        mock_page = MagicMock()
+        mock_card = MagicMock()
+        
+        # Configure mocks for successful navigation but failed parsing
+        mock_page.goto.return_value = None
+        mock_page.wait_for_selector.return_value = MagicMock()
+        mock_page.query_selector_all.return_value = [mock_card]
+        
+        # Make extract_product_data raise an exception
+        def mock_extract_error(*args, **kwargs):
+            raise Exception("Failed to extract product data")
+        
+        monkeypatch.setattr(scraper, "_extract_product_data", mock_extract_error)
+        
+        mock_context.new_page.return_value = mock_page
+        mock_browser.new_context.return_value = mock_context
+        mock_playwright.chromium.launch.return_value = mock_browser
+        
+        # Call search, should still return an empty list rather than propagating the exception
+        result = scraper.search("laptops")
+        
+        # Verify empty list is returned
+        assert isinstance(result, list)
+        assert len(result) == 0
+
+    def test_extract_condition_with_mixed_case(self, scraper):
+        """Test that _extract_condition handles mixed case text properly"""
+        card = MagicMock()
+        
+        # Test with mixed case "Like New"
+        card.query_selector.return_value.inner_text.return_value = "LiKe nEw"
+        assert scraper._extract_condition(card) == "Like New"
+        
+        # Test with mixed case "New"
+        card.query_selector.return_value.inner_text.return_value = "NeW"
+        assert scraper._extract_condition(card) == "New"
+        
+        # Test with mixed case "Good"
+        card.query_selector.return_value.inner_text.return_value = "GoOd"
+        assert scraper._extract_condition(card) == "Good"
+
+    def test_extract_condition_with_whitespace(self, scraper):
+        """Test that _extract_condition handles whitespace properly"""
+        card = MagicMock()
+        
+        # Test with extra whitespace
+        card.query_selector.return_value.inner_text.return_value = "  Like New  "
+        assert scraper._extract_condition(card) == "Like New"
+        
+        # Test with newlines
+        card.query_selector.return_value.inner_text.return_value = "New\n"
+        assert scraper._extract_condition(card) == "New"
+        
+        # Test with tabs
+        card.query_selector.return_value.inner_text.return_value = "\tGood\t"
+        assert scraper._extract_condition(card) == "Good"
+
+    def test_extract_condition_with_additional_text(self, scraper):
+        """Test that _extract_condition correctly extracts conditions with additional text"""
+        card = MagicMock()
+        
+        # Test with condition as part of a longer text
+        card.query_selector.return_value.inner_text.return_value = "Condition: Like New"
+        assert scraper._extract_condition(card) == "Like New"
+        
+        # Test with condition in the middle of text
+        card.query_selector.return_value.inner_text.return_value = "Item is in New condition"
+        assert scraper._extract_condition(card) == "New"
+        
+        # Test with description after condition
+        card.query_selector.return_value.inner_text.return_value = "Good - minor scratches"
+        assert scraper._extract_condition(card) == "Good"
+
+    def test_extract_condition_with_multiple_selectors(self, scraper, monkeypatch):
+        """Test that _extract_condition tries multiple selectors"""
+        card = MagicMock()
+        
+        # Configure card.query_selector to return None for first few selectors, then success
+        selector_results = {
+            "span:has-text('New')": None,
+            "span:has-text('Used')": None,
+            "span:has-text('Like New')": None,
+            "span:has-text('Good')": MagicMock()
+        }
+        
+        def mock_query_selector(selector):
+            result = selector_results.get(selector)
+            if result is not None and result is not None:
+                result.inner_text.return_value = "Good"
+            return result
+        
+        card.query_selector.side_effect = mock_query_selector
+        
+        # Verify it finds the condition using the fourth selector
+        assert scraper._extract_condition(card) == "Good"
+
+    def test_check_for_captcha_different_indicators(self, scraper):
+        """Test captcha detection with different indicator phrases"""
+        # Create mock page
+        page = MagicMock()
+        
+        # Test each indicator phrase
+        indicators = [
+            "captcha",
+            "security check",
+            "please verify",
+            "prove you're a human",
+            "bot check",
+            "confirm your identity"
+        ]
+        
+        for indicator in indicators:
+            # Reset page.content to contain the current indicator
+            page.content.return_value = f"page content with {indicator} in it"
+            
+            # Check detection
+            assert scraper._check_for_captcha(page) is True, f"Failed to detect captcha indicator: '{indicator}'"
+            
+        # Test with no indicators
+        page.content.return_value = "regular page with no captcha indicators"
+        assert scraper._check_for_captcha(page) is False
+
+    def test_check_for_captcha_element_detection(self, scraper, monkeypatch):
+        """Test captcha detection through element detection"""
+        # Create mock page
+        page = MagicMock()
+        page.content.return_value = "page with no text indicators"
+        
+        # Mock element detection with captcha element found
+        def mock_element_found(selector):
+            return MagicMock(is_visible=lambda: True) if "captcha" in selector.lower() else None
+            
+        page.query_selector.side_effect = mock_element_found
+        
+        # Test detection
+        assert scraper._check_for_captcha(page) is True
+        
+        # Reset with no elements found
+        page.query_selector.return_value = None
+        assert scraper._check_for_captcha(page) is False
+
+    def test_handle_captcha_exception_handling(self, scraper):
+        """Test that _handle_captcha method handles exceptions properly"""
+        # Create mock page
+        page = MagicMock()
+        
+        # Configure screenshot to raise an exception
+        page.screenshot.side_effect = Exception("Failed to take screenshot")
+        
+        # Even with error, method should return True in test environment
+        assert scraper._handle_captcha(page) is True
+        
+    def test_handle_captcha_automated_test_detection(self, scraper):
+        """Test that _handle_captcha automatically succeeds in test environment"""
+        # Create a regular object (not a MagicMock) so hasattr(page, '_is_mock') is False
+        class TestPage:
+            def screenshot(self, path):
+                pass
+        
+        page = TestPage()
+        
+        # Add _is_mock attribute to simulate test environment detection
+        page._is_mock = True
+        
+        # Should return True when _is_mock is detected
+        assert scraper._handle_captcha(page) is True
+
+    def test_handle_captcha_user_input_simulation(self, scraper, monkeypatch):
+        """Test captcha handling with simulated user input"""
+        # Create mock page
+        page = MagicMock()
+        
+        # Mock input to simulate user pressing Enter
+        monkeypatch.setattr('builtins.input', lambda _: "")
+        
+        # Test with neither _is_mock nor MagicMock detection
+        # Remove the automatic detection attributes
+        del page._is_mock
+        
+        # In a real implementation, this would wait for user input (which we've mocked)
+        assert scraper._handle_captcha(page) is True

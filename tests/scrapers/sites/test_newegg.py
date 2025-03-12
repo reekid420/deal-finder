@@ -370,3 +370,348 @@ class TestNeweggScraper:
             assert results == []
     
     # More test cases can be added for specific functionality 
+
+    def test_parse_product_with_alternative_price_format(self, scraper):
+        """Test parsing a product with alternative price format (dollar and cents in separate elements)"""
+        # Create HTML with alternative price format
+        html = """
+        <div class="item-cells-wrap">
+            <div class="item-cell">
+                <div class="item-container">
+                    <div class="item-info">
+                        <a class="item-title">Test Gaming Laptop</a>
+                        <div class="item-action">
+                            <div class="price">
+                                <strong>1,299</strong><sup>99</sup>
+                            </div>
+                        </div>
+                    </div>
+                    <a class="item-img" href="/p/123">
+                        <img alt="Test Gaming Laptop" src="image.jpg"/>
+                    </a>
+                </div>
+            </div>
+        </div>
+        """
+        
+        # Parse the HTML
+        soup = BeautifulSoup(html, 'html.parser')
+        products = scraper._parse_products(soup)
+        
+        # Verify product was parsed correctly
+        assert len(products) == 1
+        assert products[0]['title'] == "Test Gaming Laptop"
+        assert products[0]['price'] == 1299.99
+        assert products[0]['link'] == "https://www.newegg.com/p/123"
+        assert products[0]['condition'] == "New"
+        assert products[0]['source'] == "newegg"
+        
+    def test_parse_product_with_refurbished_condition(self, scraper):
+        """Test parsing a product with refurbished condition"""
+        # Create HTML with refurbished condition
+        html = """
+        <div class="item-cells-wrap">
+            <div class="item-cell">
+                <div class="item-container">
+                    <div class="item-info">
+                        <a class="item-title">Refurbished Monitor</a>
+                        <div class="item-branding">Refurbished</div>
+                        <div class="item-action">
+                            <div class="price">
+                                <li class="price-current">$<strong>199</strong><sup>99</sup></li>
+                            </div>
+                        </div>
+                    </div>
+                    <a class="item-img" href="/p/456">
+                        <img alt="Refurbished Monitor" src="image.jpg"/>
+                    </a>
+                </div>
+            </div>
+        </div>
+        """
+        
+        # Parse the HTML
+        soup = BeautifulSoup(html, 'html.parser')
+        products = scraper._parse_products(soup)
+        
+        # Verify product was parsed correctly
+        assert len(products) == 1
+        assert products[0]['title'] == "Refurbished Monitor"
+        assert products[0]['price'] == 199.99
+        assert products[0]['link'] == "https://www.newegg.com/p/456"
+        assert products[0]['condition'] == "Refurbished"
+        assert products[0]['source'] == "newegg"
+        
+    def test_parse_product_with_open_box_condition(self, scraper):
+        """Test parsing a product with open box condition"""
+        # Create HTML with open box condition
+        html = """
+        <div class="item-cells-wrap">
+            <div class="item-cell">
+                <div class="item-container">
+                    <div class="item-info">
+                        <a class="item-title">Open Box Keyboard</a>
+                        <div class="item-branding">Open Box</div>
+                        <div class="item-action">
+                            <div class="price">
+                                <li class="price-current">$<strong>49</strong><sup>99</sup></li>
+                            </div>
+                        </div>
+                    </div>
+                    <a class="item-img" href="/p/789">
+                        <img alt="Open Box Keyboard" src="image.jpg"/>
+                    </a>
+                </div>
+            </div>
+        </div>
+        """
+        
+        # Parse the HTML
+        soup = BeautifulSoup(html, 'html.parser')
+        products = scraper._parse_products(soup)
+        
+        # Verify product was parsed correctly
+        assert len(products) == 1
+        assert products[0]['title'] == "Open Box Keyboard"
+        assert products[0]['price'] == 49.99
+        assert products[0]['link'] == "https://www.newegg.com/p/789"
+        assert products[0]['condition'] == "Open Box"
+        assert products[0]['source'] == "newegg"
+        
+    def test_parse_product_with_decimal_price_in_text(self, scraper):
+        """Test parsing a product with decimal price in text format"""
+        # Create HTML with price as text with decimal
+        html = """
+        <div class="item-cells-wrap">
+            <div class="item-cell">
+                <div class="item-container">
+                    <div class="item-info">
+                        <a class="item-title">Budget Mouse</a>
+                        <div class="item-action">
+                            <div class="price">
+                                <li class="price-current">Price: 19.99</li>
+                            </div>
+                        </div>
+                    </div>
+                    <a class="item-img" href="/p/101">
+                        <img alt="Budget Mouse" src="image.jpg"/>
+                    </a>
+                </div>
+            </div>
+        </div>
+        """
+        
+        # Parse the HTML
+        soup = BeautifulSoup(html, 'html.parser')
+        products = scraper._parse_products(soup)
+        
+        # Verify product was parsed correctly
+        assert len(products) == 1
+        assert products[0]['title'] == "Budget Mouse"
+        assert products[0]['price'] == 19.99
+        assert products[0]['link'] == "https://www.newegg.com/p/101"
+        
+    def test_parse_product_with_missing_price(self, scraper):
+        """Test parsing a product with missing price"""
+        # Create HTML with missing price
+        html = """
+        <div class="item-cells-wrap">
+            <div class="item-cell">
+                <div class="item-container">
+                    <div class="item-info">
+                        <a class="item-title">No Price Product</a>
+                        <div class="item-action">
+                            <div class="price">
+                                <li class="price-current">Out of Stock</li>
+                            </div>
+                        </div>
+                    </div>
+                    <a class="item-img" href="/p/202">
+                        <img alt="No Price Product" src="image.jpg"/>
+                    </a>
+                </div>
+            </div>
+        </div>
+        """
+        
+        # Parse the HTML
+        soup = BeautifulSoup(html, 'html.parser')
+        products = scraper._parse_products(soup)
+        
+        # Verify no products were added due to missing price
+        assert len(products) == 0
+        
+    def test_parse_product_with_multiple_items(self, scraper):
+        """Test parsing multiple products"""
+        # Create HTML with multiple products
+        html = """
+        <div class="item-cells-wrap">
+            <div class="item-cell">
+                <div class="item-container">
+                    <div class="item-info">
+                        <a class="item-title">Product 1</a>
+                        <div class="item-action">
+                            <div class="price">
+                                <li class="price-current">$<strong>99</strong><sup>99</sup></li>
+                            </div>
+                        </div>
+                    </div>
+                    <a class="item-img" href="/p/111">
+                        <img alt="Product 1" src="image1.jpg"/>
+                    </a>
+                </div>
+            </div>
+            <div class="item-cell">
+                <div class="item-container">
+                    <div class="item-info">
+                        <a class="item-title">Product 2</a>
+                        <div class="item-action">
+                            <div class="price">
+                                <li class="price-current">$<strong>199</strong><sup>99</sup></li>
+                            </div>
+                        </div>
+                    </div>
+                    <a class="item-img" href="/p/222">
+                        <img alt="Product 2" src="image2.jpg"/>
+                    </a>
+                </div>
+            </div>
+        </div>
+        """
+        
+        # Parse the HTML
+        soup = BeautifulSoup(html, 'html.parser')
+        products = scraper._parse_products(soup)
+        
+        # Verify both products were parsed correctly
+        assert len(products) == 2
+        assert products[0]['title'] == "Product 1"
+        assert products[0]['price'] == 99.99
+        assert products[1]['title'] == "Product 2"
+        assert products[1]['price'] == 199.99
+
+    def test_search_with_browser_network_error(self, scraper, mock_playwright, monkeypatch):
+        """Test error handling when network errors occur during navigation"""
+        # Mock setup
+        mock_browser = MagicMock()
+        mock_context = MagicMock()
+        mock_page = MagicMock()
+        
+        # Configure mock to simulate a network error
+        def mock_goto_error(*args, **kwargs):
+            raise Exception("Network error occurred")
+        
+        mock_page.goto.side_effect = mock_goto_error
+        mock_context.new_page.return_value = mock_page
+        mock_browser.new_context.return_value = mock_context
+        mock_playwright.chromium.launch.return_value = mock_browser
+        
+        # Call the method directly
+        result = scraper._search_with_browser("https://www.newegg.com/test")
+        
+        # Verify empty list is returned
+        assert isinstance(result, list)
+        assert len(result) == 0
+        
+    def test_search_with_browser_content_extraction_error(self, scraper, mock_playwright, monkeypatch):
+        """Test error handling when content extraction fails"""
+        # Mock setup
+        mock_browser = MagicMock()
+        mock_context = MagicMock()
+        mock_page = MagicMock()
+        
+        # Configure mocks for successful navigation but failed content extraction
+        mock_page.goto.return_value = None
+        mock_page.wait_for_selector.return_value = MagicMock()
+        
+        # Make content() raise an exception
+        def mock_content_error(*args, **kwargs):
+            raise Exception("Failed to extract content")
+        
+        mock_page.content.side_effect = mock_content_error
+        mock_context.new_page.return_value = mock_page
+        mock_browser.new_context.return_value = mock_context
+        mock_playwright.chromium.launch.return_value = mock_browser
+        
+        # Call the method directly
+        result = scraper._search_with_browser("https://www.newegg.com/test")
+        
+        # Verify empty list is returned
+        assert isinstance(result, list)
+        assert len(result) == 0
+
+    def test_search_with_price_filter(self, scraper, monkeypatch):
+        """Test that search properly constructs URL with price filter"""
+        # Create a mock for the _search_with_browser method to capture the URL
+        captured_url = None
+        
+        def mock_search_with_browser(self, url):
+            nonlocal captured_url
+            captured_url = url
+            return []
+            
+        monkeypatch.setattr(NeweggScraper, '_search_with_browser', mock_search_with_browser)
+        
+        # Call search with a price filter
+        scraper.search("gaming laptop", max_price=1000)
+        
+        # Verify the URL includes price filter
+        assert captured_url is not None
+        assert "Price=%7B0%7D+TO+1000" in captured_url
+        
+    def test_search_with_condition_filter_new(self, scraper, monkeypatch):
+        """Test that search properly constructs URL with new condition filter"""
+        # Create a mock for the _search_with_browser method to capture the URL
+        captured_url = None
+        
+        def mock_search_with_browser(self, url):
+            nonlocal captured_url
+            captured_url = url
+            return []
+            
+        monkeypatch.setattr(NeweggScraper, '_search_with_browser', mock_search_with_browser)
+        
+        # Call search with "new" condition filter
+        scraper.search("gaming laptop", condition="new")
+        
+        # Verify the URL includes the new condition filter
+        assert captured_url is not None
+        assert "N=100167671" in captured_url
+        
+    def test_search_with_condition_filter_refurbished(self, scraper, monkeypatch):
+        """Test that search properly constructs URL with refurbished condition filter"""
+        # Create a mock for the _search_with_browser method to capture the URL
+        captured_url = None
+        
+        def mock_search_with_browser(self, url):
+            nonlocal captured_url
+            captured_url = url
+            return []
+            
+        monkeypatch.setattr(NeweggScraper, '_search_with_browser', mock_search_with_browser)
+        
+        # Call search with "refurbished" condition filter
+        scraper.search("gaming laptop", condition="refurbished")
+        
+        # Verify the URL includes the refurbished condition filter
+        assert captured_url is not None
+        assert "N=100167670" in captured_url
+        
+    def test_search_with_condition_filter_used(self, scraper, monkeypatch):
+        """Test that search properly constructs URL with used (open box) condition filter"""
+        # Create a mock for the _search_with_browser method to capture the URL
+        captured_url = None
+        
+        def mock_search_with_browser(self, url):
+            nonlocal captured_url
+            captured_url = url
+            return []
+            
+        monkeypatch.setattr(NeweggScraper, '_search_with_browser', mock_search_with_browser)
+        
+        # Call search with "used" condition filter
+        scraper.search("gaming laptop", condition="used")
+        
+        # Verify the URL includes the open box condition filter
+        assert captured_url is not None
+        assert "N=100167669" in captured_url 
