@@ -1,0 +1,40 @@
+# Changelog
+
+All notable changes to the Deal Finder project will be documented in this file.
+
+## [0.5.0] - 2025-03-12
+- Improved test coverage from 43% to 44%
+- Enhanced Facebook scraper tests with 8 new test cases
+- Fixed headless mode operation in all scrapers
+- Added comprehensive test suite documentation
+- Improved .gitignore configuration to exclude sensitive keys and temporary files
+- Fixed all failing tests across modules (61/61 tests now pass)
+
+## [0.4.0]
+- Added Newegg integration for computer hardware and electronics
+- Improved Facebook Marketplace scraper with better detection avoidance
+- Enhanced JSON parsing in AI ranking system
+- Added more robust error handling for marketplace scrapers
+- Improved condition detection for better filtering
+
+## [0.3.0]
+- Added Facebook Marketplace integration with Playwright
+- Completely redesigned UI with card view and table view options
+- Enhanced AI query processing with brand detection and keyword extraction
+- Added support for keyword tagging to refine searches
+- Improved error handling and fallback mechanisms
+- Added sorting options (AI recommendation, price low-high, price high-low)
+- Added platform selection to choose which sites to search
+
+## [0.2.0]
+- Improved AI integration with Gemini API
+- Enhanced error handling in AI processing
+- Dynamic model selection for Gemini API
+- Updated UI to better process structured AI responses
+- Added fallback mechanisms when AI services are unavailable
+
+## [0.1.0]
+- Initial release with basic functionality
+- eBay integration
+- Simple UI with Streamlit
+- Location-based filtering 

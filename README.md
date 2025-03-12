@@ -1,4 +1,4 @@
-# AI-Powered Tech Deals Finder
+# AI-Powered Deal Finder
 
 A multi-platform web crawler that searches reselling sites based on user prompts, powered by AI to understand requests, search appropriate sites, and provide personalized recommendations.
 
@@ -19,7 +19,7 @@ A multi-platform web crawler that searches reselling sites based on user prompts
 
 2. Clone the repository:
 ```bash
-git clone https://github.com/reekid420/tech-deals-finder.git
+git clone https://github.com/reekid420/deal-finder.git
 cd deal-finder
 ```
 
@@ -50,7 +50,7 @@ FB_PASSWORD=your_facebook_password
 
 ## Usage
 
-Run the Streamlit web application:
+Run the application:
 
 ```bash
 python main.py
@@ -61,7 +61,7 @@ This will open a web interface where you can:
 2. Set your budget and select which platforms to search
 3. Add specific keywords or tags to refine your search
 4. Configure location settings and search radius
-5. Get personalized tech deal recommendations displayed in a beautiful card layout
+5. Get personalized deal recommendations displayed in a beautiful card layout
 
 ### Example Queries
 
@@ -72,9 +72,10 @@ This will open a web interface where you can:
 ## Project Structure
 
 ```
-tech-deals-finder/
+deal-finder/
 ├── main.py               # Entry point for CLI version
 ├── requirements.txt      # Project dependencies
+├── run_tests.py          # Script to run the test suite
 ├── ui/
 │   └── app.py            # Streamlit web interface
 ├── scrapers/
@@ -84,12 +85,18 @@ tech-deals-finder/
 │       ├── __init__.py
 │       ├── ebay.py       # eBay scraper
 │       ├── facebook.py   # Facebook Marketplace scraper
-│       └── ...           # Other site scrapers
+│       └── newegg.py     # Newegg scraper
 ├── utils/
 │   ├── __init__.py
 │   ├── ai_helper.py      # Google Gemini API integration
 │   ├── config.py         # Configuration management
-│   └── location.py       # Geolocation services
+│   ├── location.py       # Geolocation services
+│   └── security.py       # Security and encryption utilities
+├── tests/
+│   ├── conftest.py       # Pytest fixtures
+│   ├── fixtures/         # HTML fixtures for testing
+│   ├── scrapers/         # Tests for scraper modules
+│   └── utils/            # Tests for utility modules
 └── data/
     └── cache/            # Cache for search results
 ```
@@ -106,36 +113,49 @@ Coming soon:
 - Amazon
 - OfferUp
 
-## Recent Updates
+## Testing
 
-### Version 0.4.0 (Latest)
-- Added Newegg integration for computer hardware and electronics
-- Improved Facebook Marketplace scraper with better detection avoidance
-- Enhanced JSON parsing in AI ranking system
-- Added more robust error handling for marketplace scrapers
-- Improved condition detection for better filtering
+This project includes a comprehensive test suite for automating testing of scrapers and other components without having to manually configure websites. The test suite uses mocking to simulate browser behavior and website responses.
 
-### Version 0.3.0
-- Added Facebook Marketplace integration with Playwright
-- Completely redesigned UI with card view and table view options
-- Enhanced AI query processing with brand detection and keyword extraction
-- Added support for keyword tagging to refine searches
-- Improved error handling and fallback mechanisms
-- Added sorting options (AI recommendation, price low-high, price high-low)
-- Added platform selection to choose which sites to search
+### Running Tests
 
-### Version 0.2.0
-- Improved AI integration with Gemini API
-- Enhanced error handling in AI processing
-- Dynamic model selection for Gemini API
-- Updated UI to better process structured AI responses
-- Added fallback mechanisms when AI services are unavailable
+To run the tests:
 
-### Version 0.1.0
-- Initial release with basic functionality
-- eBay integration
-- Simple UI with Streamlit
-- Location-based filtering
+```bash
+# Run all tests
+./run_tests.py
+
+# Run with verbose output
+./run_tests.py -v
+
+# Run with coverage report
+./run_tests.py -c
+
+# Run just the Facebook scraper tests
+./run_tests.py -m scrapers/sites/test_facebook.py
+```
+
+### Test Coverage
+
+Current test coverage is approximately 44% of the codebase. Here's the breakdown by module:
+
+- eBay scraper: 83%
+- Facebook scraper: 15%
+- Newegg scraper: 37%
+- AI Helper module: 68%
+- Config module: 100%
+- Location module: 87%
+- Security module: 89%
+- Logging module: 19%
+
+See `tests/COVERAGE_REPORT.md` for a detailed breakdown and recommendations for improving coverage.
+
+### Headless Mode
+
+All scrapers support headless mode operation for running without displaying browser UI. This is particularly useful for:
+- Running in environments without displays
+- Automation and CI/CD pipelines
+- Improved performance in production environments
 
 ## Requirements
 
@@ -158,87 +178,10 @@ Coming soon:
 
 Contributions are welcome! Please feel free to submit a Pull Request.
 
+## Changelog
+
+See [CHANGELOG.md](CHANGELOG.md) for a detailed history of changes to this project.
+
 ## License
 
-This project is licensed under the MIT License.
-
-# Testing
-
-This project includes a comprehensive test suite for automating testing of scrapers and other components without having to manually configure websites. The test suite uses mocking to simulate browser behavior and website responses.
-
-## Test Structure
-
-The test suite is organized as follows:
-
-- `conftest.py` - Contains shared pytest fixtures used across multiple test files
-- `fixtures/` - HTML fixtures to simulate website responses for consistent testing
-- `scrapers/` - Tests for individual scraper modules
-- `utils/` - Tests for utility functions
-- `temp/` - Temporary directory for test artifacts (created automatically)
-
-## Running Tests
-
-To run the tests:
-
-```bash
-# Run all tests
-./run_tests.py
-
-# Run with verbose output
-./run_tests.py -v
-
-# Run with coverage report
-./run_tests.py -c
-
-# Run just the Facebook scraper tests
-./run_tests.py -m scrapers/sites/test_facebook.py
-```
-
-## Test Coverage
-
-Current test coverage is approximately 39% of the codebase. Here's the breakdown by module:
-
-- eBay scraper: 83%
-- Facebook scraper: 12%
-- Newegg scraper: 22%
-- AI Helper module: 64%
-- Config module: 100%
-- Location module: 83%
-- Security module: 89%
-
-See `tests/COVERAGE_REPORT.md` for a detailed breakdown and recommendations for improving coverage.
-
-## Mocking vs. Real Testing
-
-The test suite uses mocking to simulate browser behavior and website responses, which provides several benefits:
-
-1. **Speed** - Tests run much faster without launching real browsers
-2. **Reliability** - Tests don't depend on network conditions or website changes
-3. **Consistency** - Tests produce the same results every time
-4. **No Credentials** - No need to use real login credentials in tests
-
-## Adding New Tests
-
-When adding new tests:
-
-1. Create a new test file in the appropriate directory
-2. Add HTML fixtures if needed
-3. Use the existing fixtures in `conftest.py` for browser mocking
-4. Follow the pattern of existing tests for consistency
-
-## Mock Data
-
-The test suite includes mock HTML responses in the `fixtures/` directory to simulate website responses. When adding new tests, you can:
-
-1. Use the existing fixtures
-2. Create new fixtures for different scenarios
-3. Modify existing fixtures to test edge cases
-
-## Handling Captchas in Tests
-
-For websites with captchas like Newegg, the test suite simulates both scenarios:
-
-1. No captcha detected (normal flow)
-2. Captcha detected (requires manual intervention in real usage, but mocked in tests)
-
-See `HOW_TO_RUN_TESTS.md` for more details on running and writing tests. 
+This project is licensed under the MIT License. 
