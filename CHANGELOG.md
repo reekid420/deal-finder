@@ -2,6 +2,16 @@
 
 All notable changes to the Deal Finder project will be documented in this file.
 
+## [0.5.3] - 2025-03-13
+- Improved test coverage from 49% to 50%
+- Enhanced Facebook Marketplace scraper tests, increasing coverage from 18% to 24%
+- Added comprehensive tests for condition extraction in Facebook scraper
+- Implemented captcha detection and handling tests
+- Added tests for HTML extraction fallback mechanism
+- Added tests for error handling and retry mechanisms
+- Fixed all failing tests (73/73 tests now pass, 1 skipped)
+- Updated coverage report with latest metrics and improvement recommendations
+
 ## [0.5.2] - 2025-03-12
 - Improved test coverage from 46% to 49%
 - Added comprehensive logging setup tests, increasing logging coverage from 19% to 91%

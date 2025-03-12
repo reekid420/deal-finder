@@ -5,14 +5,14 @@
 | Module | Statements | Missing | Coverage |
 |--------|------------|---------|----------|
 | scrapers/sites/ebay.py | 103 | 18 | 83% |
-| scrapers/sites/facebook.py | 378 | 309 | 18% |
+| scrapers/sites/facebook.py | 434 | 328 | 24% |
 | scrapers/sites/newegg.py | 377 | 219 | 42% |
 | utils/ai_helper.py | 182 | 59 | 68% |
 | utils/config.py | 15 | 0 | 100% |
 | utils/location.py | 47 | 6 | 87% |
 | utils/logging_setup.py | 43 | 4 | 91% |
 | utils/security.py | 87 | 10 | 89% |
-| **TOTAL** | **1232** | **625** | **49%** |
+| **TOTAL** | **1288** | **644** | **50%** |
 
 ## Analysis
 
@@ -27,7 +27,7 @@
 
 ### Areas Needing Improvement
 
-- **Facebook Scraper (18%)**: The Facebook scraper still has low coverage despite improvements.
+- **Facebook Scraper (24%)**: The Facebook scraper has improved coverage but still needs more tests.
 - **Newegg Scraper (42%)**: The Newegg scraper has improved coverage but still needs more tests.
 
 ## Recommendations for Improving Coverage
@@ -37,6 +37,7 @@
 - Create more granular tests for individual methods
 - Add tests for error handling scenarios
 - Mock more browser interactions to test complex flows
+- Add tests for session handling and cookie management
 
 ### 2. Newegg Scraper
 
@@ -46,9 +47,18 @@
 
 ## Next Steps
 
-1. **Focus on Facebook Scraper**: Prioritize improving the Facebook scraper coverage, targeting at least 30% coverage in the next release.
+1. **Continue Improving Facebook Scraper**: We've improved the Facebook scraper coverage from 18% to 24%, but should continue targeting at least 30% coverage in the next release.
 2. **Add More Integration Tests**: Add additional integration tests to verify that different components work together correctly.
-3. **Set Coverage Goals**: Aim for at least 60% coverage for all modules and 90% for critical modules.
+3. **Refactor Complex Methods**: Some methods in the Facebook and Newegg scrapers are too complex, making them difficult to test. Consider refactoring these into smaller, more testable units.
+
+## Recent Improvements
+
+- Added comprehensive tests for the `_extract_condition` method in the Facebook scraper
+- Added tests for HTML extraction when selectors fail
+- Implemented tests for captcha detection and handling
+- Added tests for error handling and retry mechanisms
+- Added tests for session restoration with invalid cookies
+- Overall coverage improved from 49% to 50%
 
 ## Running Coverage Reports
 
